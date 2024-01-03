@@ -1,13 +1,26 @@
 package it.polito.library;
 
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 
 public class LibraryManager {
 	    
-    // R1: Readers and Books 
+	// collection for each book and its copies: map key copyId value Book obj
+	private TreeMap<String,LinkedList<Book>> booksColl = new TreeMap<>();
+    // collection to associate each title to its number of copies, map key title, value int num_copies
+	private TreeSet<String> idsColl = new TreeSet<>();
+	// readers collection map key=id value=reader obj
+	private TreeMap<String,Reader> readersColl = new TreeMap<>();
+	
+	
+	// R1: Readers and Books 
     
     /**
 	 * adds a book to the library archive
@@ -19,7 +32,29 @@ public class LibraryManager {
 	 * @return the ID of the book added 
 	 */
     public String addBook(String title) {
-        return null;
+        // this will be the next id
+    	int size =1000 + this.idsColl.size();
+    	
+    	// create a new book
+    	String id = String.valueOf(size);
+    	Book b = new Book(title,id);
+    	
+    	// add the new id to the ids collection
+    	this.idsColl.add(id);
+    	
+    	// check if the title of this book has already been inserted in our collection
+    	if (this.booksColl.containsKey(title)) {
+    		// if so, then add this new copy to the list of its copies
+    		this.booksColl.get(title).add(b);
+    	}
+    	else {
+    		// otherwise we must add the title and its first copy
+    		LinkedList<Book> copiesColl = new LinkedList<>();
+    		copiesColl.add(b);
+    		this.booksColl.put(title, copiesColl);
+    	}
+    	// return the book's id
+    	return id;
     }
     
     /**
@@ -30,7 +65,10 @@ public class LibraryManager {
 	 * @return a map of the titles liked to the number of available copies
 	 */
     public SortedMap<String, Integer> getTitles() {    	
-        return null;
+        
+    	SortedMap<String, Integer> res = new TreeMap<>();
+    	this.booksColl.forEach((key, val) -> res.put(key, val.size()));
+    	return res;
     }
     
     /**
@@ -39,7 +77,8 @@ public class LibraryManager {
 	 * @return a set of the titles liked to the number of available copies
 	 */
     public Set<String> getBooks() {    	    	
-        return null;
+    	
+    	return this.idsColl;
     }
     
     /**
@@ -49,6 +88,16 @@ public class LibraryManager {
 	 * @param surname last name of the reader
 	 */
     public void addReader(String name, String surname) {
+    	
+    	int int_id = 1000 + this.readersColl.size();
+    	String id = String.valueOf(int_id);
+    	
+    	// create the new reader 
+    	Reader r = new Reader(id,name,surname);
+    	
+    	// adding it to the collection
+    	this.readersColl.put(id, r);
+    	
     }
     
     
@@ -60,7 +109,18 @@ public class LibraryManager {
 	 * @throws LibException if the readerID is not present in the archive
 	 */
     public String getReaderName(String readerID) throws LibException {
-        return null;
+        
+    	// check if the id exists
+    	if (! this.readersColl.containsKey(readerID)) {
+    		throw new LibException();
+    	}
+    	
+    	// get the reader obj
+    	Reader r = this.readersColl.get(readerID);
+    	
+    	String out = r.getName()+" "+r.getSurname();
+    	
+    	return out;
     }    
     
     
