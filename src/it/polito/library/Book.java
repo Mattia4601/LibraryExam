@@ -10,6 +10,12 @@ public class Book {
 	private LinkedList<Rental> rentals = new LinkedList<>();
 	
 	
+	// this method tells us if this book has ever been rented
+	public boolean hasBeenRented() {
+		if (this.rentals.size()!=0 || this.rented == true)
+			return true;
+		return false;
+	}
 	public void addRental(Rental r) {
 		this.rentals.add(r);
 	}

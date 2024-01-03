@@ -2,6 +2,7 @@ package it.polito.library;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -270,6 +271,34 @@ public class LibraryManager {
 	* @param donatedTitles It takes in input book titles in the format "First title,Second title"
 	*/
     public void receiveDonation(String donatedTitles) {
+    	
+    	// dividing the titles
+    	String[] fields = donatedTitles.split(",");
+    	int n;
+    	// loop on the fields
+    	for (String title : fields) {
+    		n = this.idsColl.size()+1000;
+    		String id = String.valueOf(n);
+    		// creating the new book
+    		Book b = new Book(title, id);
+    		// adding it to the collections
+    		this.idsColl.put(id, b);
+    		
+    		// check if the title has already been entered
+    		if (!this.booksColl.containsKey(title)) {
+    			// if not present we create a new List for the new entry
+    			LinkedList<Book> list = new LinkedList<>();
+    			list.add(b);
+    			this.booksColl.put(title, list);
+    		}
+    		
+    		// if already exists
+    		else {
+    			this.booksColl.get(title).add(b);
+    			
+    		}
+    	}
+    	
     }
     
     // R4: Archive Management
@@ -281,7 +310,11 @@ public class LibraryManager {
 
 	*/
     public Map<String, String> getOngoingRentals() {
-        return null;
+        
+    	Map<String, String> res = this.rentalsColll.stream().collect(Collectors.toMap(
+    			Rental::getReaderId,
+    			Rental::getBookId));
+    	return res;
     }
     
     /**
@@ -289,8 +322,38 @@ public class LibraryManager {
 	* 
 	*/
     public void removeBooks() {
+    	// get the list of books ids 
+    	List<String> listIds=this.idsColl.keySet().stream().collect(Collectors.toList());
+    	
+    	// now loop on the ids
+    	for (String id : listIds) {
+    		// for each id get the book 
+    		Book b = this.idsColl.get(id);
+    		// tell me if this book has ever been rented
+    		if (!b.hasBeenRented()) {
+    			// it has never been rented 
+    			// so then we must remove it from the archive of the library
+    			String title = b.getTitle();
+    			// remove the copy from booksColl
+    			removeBookCopy(title,id);
+    			// now we remove also the entry of idsColl
+    			this.idsColl.remove(id);
+    		}
+    	}
     }
     	
+    // this method remove a specific book copy from the list of copies of a book title
+    public void removeBookCopy(String title, String id) {
+    	LinkedList<Book> copiesList =this.booksColl.get(title);
+    	
+    	// look for the copy and remove it
+    	for (Book b : copiesList) {
+    		if (b.getCopy_id().equals(id)) {
+    			copiesList.remove(b);
+    			break;
+    		}    		   		
+    	}
+    }
     // R5: Stats
     
     /**
