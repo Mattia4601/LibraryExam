@@ -44,18 +44,18 @@ public class TestExample {
 	    assertEquals("Gianni Fidenza", lib.getReaderName("1003"));
 	    
 	    
-//	    // R2: Rentals Management
-//	
-//		assertEquals("1002",lib.getAvailableBook("Master and Margarita"));
-//		  
-//		lib.startRental("1002", "1000", "14-07-2023");
-//		assertEquals("Not available", lib.getAvailableBook("Master and Margarita"));
-//		lib.endRental("1002", "1000","15-07-2023");
-//		assertEquals("1002", lib.getAvailableBook("Master and Margarita"));
-//		  
-//		SortedMap<String, String> rentals = lib.getRentals("1002");
-//		assertEquals(1,rentals.size());
-//		assertEquals("14-07-2023 15-07-2023", rentals.get("1000"));
+	    // R2: Rentals Management
+	
+		assertEquals("1002",lib.getAvailableBook("Master and Margarita"));
+		  
+		lib.startRental("1002", "1000", "14-07-2023");
+		assertEquals("Not available", lib.getAvailableBook("Master and Margarita"));
+		lib.endRental("1002", "1000","15-07-2023");
+		assertEquals("1002", lib.getAvailableBook("Master and Margarita"));
+		  
+		SortedMap<String, String> rentals = lib.getRentals("1002");
+		assertEquals(1,rentals.size());
+		assertEquals("14-07-2023 15-07-2023", rentals.get("1000"));
 //		 
 //	    
 //	    // R3: Book Donations

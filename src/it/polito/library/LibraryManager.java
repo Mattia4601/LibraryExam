@@ -1,5 +1,6 @@
 package it.polito.library;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,11 +15,12 @@ public class LibraryManager {
 	    
 	// collection for each book and its copies: map key copyId value Book obj
 	private TreeMap<String,LinkedList<Book>> booksColl = new TreeMap<>();
-    // collection to associate each title to its number of copies, map key title, value int num_copies
-	private TreeSet<String> idsColl = new TreeSet<>();
+    // collection of bookscopies map key=bookid value=bookcopy
+	private TreeMap<String,Book> idsColl = new TreeMap<>();
 	// readers collection map key=id value=reader obj
 	private TreeMap<String,Reader> readersColl = new TreeMap<>();
-	
+	// rentals collection
+	private Set<Rental> rentalsColll = new HashSet<>();
 	
 	// R1: Readers and Books 
     
@@ -40,7 +42,7 @@ public class LibraryManager {
     	Book b = new Book(title,id);
     	
     	// add the new id to the ids collection
-    	this.idsColl.add(id);
+    	this.idsColl.put(id, b);
     	
     	// check if the title of this book has already been inserted in our collection
     	if (this.booksColl.containsKey(title)) {
@@ -78,7 +80,7 @@ public class LibraryManager {
 	 */
     public Set<String> getBooks() {    	    	
     	
-    	return this.idsColl;
+    	return this.idsColl.keySet();
     }
     
     /**
@@ -135,7 +137,24 @@ public class LibraryManager {
 	 * @throws LibException  an exception if the book is not present in the archive
 	 */
     public String getAvailableBook(String bookTitle) throws LibException {
-        return null;
+       
+    	// check if the title exists
+    	if (! this.booksColl.containsKey(bookTitle))
+    		throw new LibException();
+    	
+    	// get all the copies we have
+    	LinkedList<Book> bookCopies = this.booksColl.get(bookTitle);
+    	// and find the first one available
+    	String book_id=null;
+    	for (Book b : bookCopies) {
+    		if (!b.isRented())
+    			book_id = b.getCopy_id();
+    			
+    	}
+    	
+    	if (book_id == null)
+    		return "Not available";
+    	return book_id;
     }   
 
     /**
@@ -148,6 +167,36 @@ public class LibraryManager {
 	 * if the reader is already renting a book, or if the book copy is already rented
 	 */
 	public void startRental(String bookID, String readerID, String startingDate) throws LibException {
+		
+		// first thing to do check if the reader and the book are registered
+		if (!this.readersColl.containsKey(readerID) || !this.idsColl.containsKey(bookID))
+			throw new LibException();
+		
+		Reader reader = this.readersColl.get(readerID);
+		Book book = this.idsColl.get(bookID);
+		// check if this is duplicated rental
+		for (Rental ren : this.rentalsColll) {
+			if (ren.getReaderId().equals(readerID) && ren.getBookId().equals(bookID)) {
+				// we overwrite the older rental
+				ren.setStartDate(startingDate);
+				return;
+			}
+		}
+		
+		// check if either of them is currently involved in a rental
+		if (reader.isRenting() || book.isRented()) {
+			throw new LibException();
+		}
+		
+		// create a new rental object
+		Rental r = new Rental(bookID,readerID,startingDate);
+		// update the boolean flags for reader and book involved in a rental
+		book.setRented(true);reader.setRenting(true);
+		
+		// adding it to our collection 
+		this.rentalsColll.add(r);
+		
+		
     }
     
 	/**
@@ -160,6 +209,32 @@ public class LibraryManager {
 	 * if the reader is not renting a book, or if the book copy is not rented
 	 */
     public void endRental(String bookID, String readerID, String endingDate) throws LibException {
+    	
+    	// check if the reader and the book are registered
+		if (!this.readersColl.containsKey(readerID) || !this.idsColl.containsKey(bookID))
+			throw new LibException();
+    	
+    	Book b = this.idsColl.get(bookID);
+		Reader reader = this.readersColl.get(readerID);
+    	
+		// check if the book is currently on rental
+		if (!b.isRented())
+			throw new LibException();
+		
+    	// looking for the rental object
+		for (Rental ren : this.rentalsColll) {
+			if (ren.getReaderId().equals(readerID) && ren.getBookId().equals(bookID)) {
+				// adding the ending date to the rental object
+				ren.setEndDate(endingDate);
+				// update the list of book's rentals
+				b.addRental(ren);
+				// update the reader's and book's flags since the rent is done
+				b.setRented(false);reader.setRenting(false);
+				// remove it from the set of rentals
+				this.rentalsColll.remove(ren);
+				break;
+			}
+		}
     }
     
     
@@ -173,7 +248,17 @@ public class LibraryManager {
 	* if the reader is not renting a book, or if the book copy is not rented
 	*/
     public SortedMap<String, String> getRentals(String bookID) throws LibException {
-        return null;
+        Book b = this.idsColl.get(bookID);
+        
+        SortedMap<String, String> res = b.getRentalsList().stream().collect(Collectors.toMap(
+        		Rental::getReaderId, 
+        		r->{
+        			return r.getStartDate()+" "+r.getEndDate();
+        		},
+        		(existingValue, newValue) -> existingValue + " " + newValue, // in case of duplicated keys we merge the two values
+                TreeMap::new)
+        		);
+    	return res;
     }
     
     

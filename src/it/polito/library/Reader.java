@@ -4,7 +4,15 @@ public class Reader {
 	private String readerId;
 	private String name;
 	private String surname;
+	private boolean renting=false;
 	
+	public boolean isRenting() {
+		return this.renting;
+	}
+	
+	public void setRenting(boolean val) {
+		this.renting=val;
+	}
 	public String getReaderId() {
 		return readerId;
 	}
