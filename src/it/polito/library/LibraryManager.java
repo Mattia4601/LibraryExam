@@ -1,10 +1,12 @@
 package it.polito.library;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -22,7 +24,8 @@ public class LibraryManager {
 	private TreeMap<String,Reader> readersColl = new TreeMap<>();
 	// rentals collection
 	private Set<Rental> rentalsColll = new HashSet<>();
-	
+	// ended rentals
+	private Set<Rental> endedRentals = new HashSet<>();
 	// R1: Readers and Books 
     
     /**
@@ -231,6 +234,8 @@ public class LibraryManager {
 				b.addRental(ren);
 				// update the reader's and book's flags since the rent is done
 				b.setRented(false);reader.setRenting(false);
+				// adding it to the endedRentals
+				this.endedRentals.add(ren);
 				// remove it from the set of rentals
 				this.rentalsColll.remove(ren);
 				break;
@@ -342,7 +347,7 @@ public class LibraryManager {
     	}
     }
     	
-    // this method remove a specific book copy from the list of copies of a book title
+    // this method remove a specific book copy from the list of copies of a book title.
     public void removeBookCopy(String title, String id) {
     	LinkedList<Book> copiesList =this.booksColl.get(title);
     	
@@ -363,7 +368,18 @@ public class LibraryManager {
 	* @return the uniqueID of the reader with the highest number of rentals
 	*/
     public String findBookWorm() {
-        return null;
+        // I make a map which associate each readerId with the number of his occurrences in the set
+    	Map<String,Long> mapIdOcc = this.endedRentals.stream()
+    			.collect(Collectors.groupingBy(
+    					Rental::getReaderId,
+    					Collectors.counting()));
+    	
+    	// now we find the key with the highest value
+    	String id = mapIdOcc.entrySet().stream()
+    			.max(Map.Entry.comparingByValue())
+				.map(Map.Entry::getKey)
+				.orElse(null);
+    	return id;
     }
     
     /**
@@ -372,7 +388,19 @@ public class LibraryManager {
 	* @return the map linking a title with the number of rentals
 	*/
     public Map<String,Integer> rentalCounts() {
-        return null;
+    	
+    	Map<String,Integer> res = this.idsColl.values().stream()
+    			.collect(Collectors.toMap(
+    					Book::getTitle,
+    					Book::getRentalsNumber,
+    					(a,b)->a+b,
+    					TreeMap::new));
+    	
+    	System.out.println(res);
+    	return res;
+
     }
 
+    
+    
 }

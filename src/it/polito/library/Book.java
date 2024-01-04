@@ -9,7 +9,10 @@ public class Book {
 	private boolean rented=false;
 	private LinkedList<Rental> rentals = new LinkedList<>();
 	
-	
+	// this method return the total numbers of rentals
+	public int getRentalsNumber() {
+		return this.rentals.size();
+	}
 	// this method tells us if this book has ever been rented
 	public boolean hasBeenRented() {
 		if (this.rentals.size()!=0 || this.rented == true)

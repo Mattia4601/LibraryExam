@@ -94,16 +94,15 @@ public class TestExample {
 	    assertEquals(2, books.size());
 	    
 	    
-//	    // R5: Stats
-//	    
-//	    String bookWorm = lib.findBookWorm();
-//	    assertEquals("1002", bookWorm);
-//
-//	    Map<String,Integer> counts = lib.rentalCounts();
-//	    assertNotNull(counts);
-//	    assertEquals(2,counts.size());
-//	    assertTrue(counts.containsKey("Master and Margarita"));
-//	    assertEquals(Integer.valueOf(2), counts.get("Master and Margarita"));
+	    // R5: Stats
+	    
+	    String bookWorm = lib.findBookWorm();
+	    assertEquals("1002", bookWorm);
+	    Map<String,Integer> counts = lib.rentalCounts();
+	    assertNotNull(counts);
+	    assertEquals(2,counts.size());
+	    assertTrue(counts.containsKey("Master and Margarita"));
+	    assertEquals(Integer.valueOf(2), counts.get("Master and Margarita"));
     }
     
 }
